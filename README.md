@@ -28,11 +28,37 @@ git clone https://github.com/kleqing/Code-Explainer-Back-end.git
 dotnet build
 ```
 
-- Create database from model (required dotnet ef core)
+- Create database from model (recommended: use the local tool manifest to avoid global installs)
+
 ```bash
-dotnet ef migrations add "Initial" --project CodeExplainer.BusinessObject  --startup-project CodeExplainer.WebApi --context ApplicationDbContext
-dotnet ef database update --project CodeExplainer.BusinessObject  --startup-project CodeExplainer.WebApi --context ApplicationDbContext
+# (recommended) create a local tool manifest and install dotnet-ef as a local tool
+dotnet new tool-manifest
+dotnet tool install dotnet-ef --version 9.0.10
+dotnet tool restore
+
+# add a migration (run from repo root)
+dotnet tool run dotnet-ef migrations add "Initial" --project CodeExplainer.BusinessObject --startup-project CodeExplainer.WebApi --context ApplicationDbContext
+
+# update database (example using environment variable to provide the connection string)
+# PowerShell
+$env:ConnectionStrings__DefaultConnection="Host=...;Port=5432;Database=...;Username=...;Password=...;Ssl Mode=Require;Trust Server Certificate=true"
+dotnet tool run dotnet-ef database update --project CodeExplainer.BusinessObject --startup-project CodeExplainer.WebApi --context ApplicationDbContext --connection "$env:ConnectionStrings__DefaultConnection"
+
+# or using the environment variable name the app expects (when running the API)
+$env:SQL_CONNECTION_STRING="Host=...;Port=5432;Database=...;Username=...;Password=...;Ssl Mode=Require;Trust Server Certificate=true"
+# then run the API which will apply migrations on startup (Program.cs contains db.Database.Migrate())
+dotnet run --project CodeExplainer.WebApi/CodeExplainer.WebApi.csproj -c Debug
 ```
+
+Notes:
+- Do NOT commit secrets into repository files. Use environment variables or `dotnet user-secrets` for development:
+```bash
+# from CodeExplainer.WebApi folder:
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Port=5432;Database=...;Username=...;Password=...;Ssl Mode=Require;Trust Server Certificate=true"
+```
+- After running migrations, verify the schema and the `__EFMigrationsHistory` table in your PostgreSQL/Neon instance.
+- Rotate any credentials that were exposed.
 
 *API Endpoint:* https://localhost:7077/swagger/index.html
 
