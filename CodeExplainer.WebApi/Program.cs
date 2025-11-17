@@ -27,7 +27,7 @@ public class Program
         DotEnv.Load();
         var builder = WebApplication.CreateBuilder(args);
         
-        var corsPolicy = "AllowSpecificOrigins"; 
+        var corsPolicy = "AllowSpecificOrigins";
         
         var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
         if (allowedOrigins == null || allowedOrigins.Length == 0)
@@ -39,25 +39,27 @@ public class Program
             }
         }
         
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        // Prefer environment variable first so local .env or environment can override remote config
+        var connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        }
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            connectionString = Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING");
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException("Database connection string is not set in environment variables.");
-            }
+            throw new InvalidOperationException("Database connection string is not set. Set SQL_CONNECTION_STRING environment variable or configure ConnectionStrings:DefaultConnection in appsettings.");
         }
         
         var openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         if (string.IsNullOrWhiteSpace(openAiApiKey))
         {
             openAiApiKey = builder.Configuration["OpenAI:ApiKey"];
-            if (string.IsNullOrWhiteSpace(openAiApiKey))
-            {
-                throw new InvalidOperationException("OpenAI API key is not set in environment variables.");
-            }
+        }
+
+        if (string.IsNullOrWhiteSpace(openAiApiKey))
+        {
+            throw new InvalidOperationException("OpenAI API key is not set in environment variables.");
         }
 
         builder.Services.AddDbContext<ApplicationDbContext>(options
