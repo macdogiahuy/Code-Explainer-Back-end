@@ -105,8 +105,10 @@ public class AuthController : ControllerBase
         {
             response.StatusCode = StatusCodes.Status500InternalServerError;
             response.Success = false;
-            response.Message = "An error occurred while processing your request.";
-            response.Errors = new List<string> { e.Message };
+            // Dev-friendly: surface the real error message so you can see why login fails.
+            // TODO: change back to a generic message before going to production.
+            response.Message = e.Message;
+            response.Errors = new List<string> { e.ToString() };
             response.Data = null;
         }
         return Ok(response);

@@ -13,7 +13,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Column="0" Margin="0,0,20,0" Background="White" BorderBrush="{StaticResource SurfaceBorderBrush}" BorderThickness="1" CornerRadius="12">
+        <Border Grid.Column="0"
+            Margin="0,0,20,0"
+            Width="320"
+            Background="White"
+            BorderBrush="{StaticResource SurfaceBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="12">
             <DockPanel>
                 <Border DockPanel.Dock="Top" Padding="16" Background="Transparent">
                     <StackPanel>
@@ -60,10 +66,11 @@
                     BorderBrush="{StaticResource SurfaceBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="12"
-                    Margin="0,0,0,16">
+                    Margin="0,0,0,16"
+                    HorizontalAlignment="Stretch">
                 <StackPanel>
                     <TextBlock Text="Nhập code để phân tích" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,12" />
-                    <Grid>
+                    <Grid HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
                             <ColumnDefinition Width="*" />
@@ -81,7 +88,7 @@
                                 <ComboBoxItem Content="TypeScript" Tag="typescript" />
                             </ComboBox>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                        <StackPanel Grid.Column="1" Margin="16,0,0,0" HorizontalAlignment="Stretch">
                             <TextBlock Text="Đoạn mã" FontWeight="SemiBold" />
                             <TextBox Text="{Binding SourceCode, UpdateSourceTrigger=PropertyChanged}"
                                     AcceptsReturn="True"
@@ -89,7 +96,8 @@
                                     TextWrapping="Wrap"
                                     FontFamily="Consolas"
                                     Margin="0,8,0,0"
-                                    IsEnabled="{Binding IsConnected}" />
+                                    IsEnabled="{Binding IsConnected}"
+                                    HorizontalAlignment="Stretch" />
                         </StackPanel>
                     </Grid>
                     <TextBlock Text="{Binding Error}"
@@ -119,8 +127,9 @@
                     Background="White"
                     BorderBrush="{StaticResource SurfaceBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="12">
-                <DockPanel>
+                    CornerRadius="12"
+                    HorizontalAlignment="Stretch">
+                <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top"
                                Text="Kết quả phân tích"
                                FontWeight="SemiBold"
@@ -132,23 +141,46 @@
                                TextWrapping="Wrap"
                                Foreground="{StaticResource BrandAccentBrush}"
                                Visibility="{Binding SystemMessage, Converter={StaticResource StringToVisibilityConverter}}" />
-                    <ScrollViewer Margin="16" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding Messages}">
+                    <ScrollViewer x:Name="MessagesScrollViewer"
+                                  Margin="16"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="MessagesItemsControl" ItemsSource="{Binding Messages}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,0,0,12"
-                                            Padding="12"
-                                            Background="{Binding IsFromUser, Converter={StaticResource BoolToBrushConverter}}"
-                                            CornerRadius="8">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Role}" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                            <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}"
-                                                      FontSize="12"
-                                                      Foreground="{StaticResource TextSecondaryBrush}"
-                                                      HorizontalAlignment="Right" />
-                                        </StackPanel>
-                                    </Border>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.ColumnSpan="2"
+                                                Padding="0"
+                                                Background="Transparent">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="6" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0"
+                                                        Background="{Binding IsFromUser, Converter={StaticResource BoolToBrushConverter}, ConverterParameter=AccentBar}"
+                                                        CornerRadius="3"
+                                                        Width="6"
+                                                        Margin="0,0,8,0" />
+                                                <Border Grid.Column="1"
+                                                    Padding="12"
+                                                    Background="{Binding IsFromUser, Converter={StaticResource BoolToBrushConverter}}"
+                                                    CornerRadius="8"
+                                                    HorizontalAlignment="Stretch">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Role}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Margin="0,6,0,0" FontFamily="Consolas" FontSize="14" />
+                                                        <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" Margin="0,8,0,0" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

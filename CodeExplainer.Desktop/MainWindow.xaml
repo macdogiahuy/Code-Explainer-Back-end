@@ -81,9 +81,9 @@
                 </StackPanel>
 
                 <Button Grid.Row="2"
-                        Content="Đăng xuất"
-                        Margin="20"
-                        Command="{Binding LogoutAsyncCommand}" />
+                    Content="Đăng xuất"
+                    Margin="20"
+                    Command="{Binding LogoutCommand}" />
             </Grid>
         </Border>
 

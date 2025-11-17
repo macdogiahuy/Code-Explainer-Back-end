@@ -73,6 +73,38 @@ public class AuthService : IAuthService
 
     public async Task LogoutAsync()
     {
-        await _apiClient.PostAsync<object, BaseResultResponse<string>>("api/auth/logout", new { });
+        try
+        {
+            await _apiClient.PostAsync<object, BaseResultResponse<string>>("api/auth/logout", new { });
+        }
+        catch
+        {
+            // Ignore network errors; still clear local cookies/state so the UI can log out locally.
+        }
+
+        // Clear cookies for the API base URL so any session cookie is removed locally.
+        try
+        {
+            var baseUrl = _configuration["Api:BaseUrl"] ?? Environment.GetEnvironmentVariable("CODEEXPLAINER_DESKTOP_Api__BaseUrl") ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                if (!baseUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    baseUrl = "http://" + baseUrl;
+                }
+
+                var uri = new Uri(baseUrl);
+                var cookies = _apiClient.CookieContainer.GetCookies(uri);
+                foreach (System.Net.Cookie c in cookies)
+                {
+                    try
+                    {
+                        c.Expired = true;
+                    }
+                    catch { }
+                }
+            }
+        }
+        catch { }
     }
 }

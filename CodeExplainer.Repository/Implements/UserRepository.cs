@@ -92,12 +92,25 @@ public class UserRepository : IUserRepository
     
     public async Task<bool> CheckPasswordAsync(User user, string password)
     {
+        // If the passed user already contains a password hash (common when fetched earlier), use it
+        if (user != null && !string.IsNullOrWhiteSpace(user.PasswordHash))
+        {
+            return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
+        }
+
+        // Fallback: load from database if necessary
         var userInDb = await _context.Users.FirstOrDefaultAsync(u => u.UserId == user.UserId);
         return userInDb != null && BCrypt.Net.BCrypt.Verify(password, userInDb.PasswordHash);
     }
 
     public async Task<bool> IsEmailConfirmedAsync(User user)
     {
+        // If the passed user already has EmailConfirmed set, return it without querying again
+        if (user != null)
+        {
+            return user.EmailConfirmed;
+        }
+
         var userInDb = await _context.Users.FirstOrDefaultAsync(u => u.UserId == user.UserId);
         return userInDb?.EmailConfirmed ?? false;
     }

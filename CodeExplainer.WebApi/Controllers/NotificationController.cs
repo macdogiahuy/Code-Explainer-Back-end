@@ -1,8 +1,12 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using CodeExplainer.BusinessObject.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CodeExplainer.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using CodeExplainer.WebApi.Hubs;
+using Microsoft.Extensions.Logging;
 namespace CodeExplainer.WebApi.Controllers;
 
 [ApiController]
@@ -11,10 +15,17 @@ namespace CodeExplainer.WebApi.Controllers;
 public class NotificationController : ControllerBase
 {
     private readonly INotificationServices _notificationService;
+    private readonly IHubContext<NotificationHub> _notificationHub;
+    private readonly ILogger<NotificationController> _logger;
     
-    public NotificationController(INotificationServices notificationService)
+    public NotificationController(
+        INotificationServices notificationService,
+        IHubContext<NotificationHub> notificationHub,
+        ILogger<NotificationController> logger)
     {
         _notificationService = notificationService;
+        _notificationHub = notificationHub;
+        _logger = logger;
     }
     
     [HttpGet]
@@ -30,6 +41,7 @@ public class NotificationController : ControllerBase
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var notification = await _notificationService.CreateNotificationAsync(userId, request.Title, request.Message);
+        await TryNotifyAsync(userId, notification.NotificationId.ToString());
         return Ok(notification);
     }
 
@@ -45,5 +57,17 @@ public class NotificationController : ControllerBase
     {
         await _notificationService.DeleteNotificationAsync(id);
         return Ok();
+    }
+
+    private async Task TryNotifyAsync(Guid userId, string message)
+    {
+        try
+        {
+            await _notificationHub.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to push notification hub message for user {UserId}", userId);
+        }
     }
 }

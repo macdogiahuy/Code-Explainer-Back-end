@@ -83,11 +83,32 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        await _authService.LogoutAsync();
-        IsAuthenticated = false;
-        CurrentUser = new UserProfile();
-        _authViewModel.Reset();
-        NavigateTo(_authViewModel);
+        // Immediately update UI so logout is responsive even when API is slow/unreachable
+        try
+        {
+            IsAuthenticated = false;
+            CurrentUser = new UserProfile();
+            _authViewModel.Reset();
+            NavigateTo(_authViewModel);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Logout UI update error: {ex.Message}");
+        }
+
+        // Fire-and-forget the server logout call; clear local state above regardless of network outcome.
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _authService.LogoutAsync();
+                System.Diagnostics.Debug.WriteLine("Logout API call completed.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Logout API call failed: {ex.Message}");
+            }
+        });
     }
 
     private void NavigateTo(ObservableObject viewModel)

@@ -131,7 +131,9 @@ public class AuthorizeServices : IAuthorizeServices
             throw new GlobalException("Invalid email or password");
         }
 
-        if (!await _userRepository.IsEmailConfirmedAsync(user))
+        // Allow skipping email confirmation check via configuration (useful for local/dev testing)
+        var allowUnconfirmedLogin = _configuration.GetValue<bool>("AllowUnconfirmedLogin", false);
+        if (!await _userRepository.IsEmailConfirmedAsync(user) && !allowUnconfirmedLogin)
         {
             throw new GlobalException("Email is not confirmed");
         }
