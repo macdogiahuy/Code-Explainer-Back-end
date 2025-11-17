@@ -5,10 +5,6 @@
       {
         "Path": "CodeExplainer.Desktop\\CodeExplainer.Desktop.csproj",
         "Action": "Start"
-      },
-      {
-        "Path": "CodeExplainer.WebApi\\CodeExplainer.WebApi.csproj",
-        "Action": "Start"
       }
     ]
   }

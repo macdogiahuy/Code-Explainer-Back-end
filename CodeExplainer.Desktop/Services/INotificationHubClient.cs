@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 
@@ -22,19 +23,20 @@ public class NotificationHubClient : INotificationHubClient
 
  public bool IsConnected => _hubConnection.State == HubConnectionState.Connected;
 
- public NotificationHubClient(IConfiguration configuration)
+ // Accept HttpClient so we can reuse its configured BaseAddress (which has a fallback in DI)
+ public NotificationHubClient(IConfiguration configuration, HttpClient? httpClient = null)
  {
- // Prefer the colon-delimited key used elsewhere in the app, but fall back to the old key if present.
- var baseUrl = configuration["Api:BaseUrl"] ?? configuration.GetValue<string>("ApiBaseUrl");
+ // Prefer HttpClient.BaseAddress (registered in DI). Fall back to configuration keys or a safe default.
+ Uri? baseUri = httpClient?.BaseAddress;
 
- if (string.IsNullOrWhiteSpace(baseUrl))
+ if (baseUri == null)
  {
- throw new InvalidOperationException("Missing configuration value for 'Api:BaseUrl' (or 'ApiBaseUrl'). Ensure appsettings or environment variables supply the API base URL.");
- }
+ var baseUrl = configuration["Api:BaseUrl"] ?? configuration.GetValue<string>("ApiBaseUrl") ?? "https://localhost:5001";
 
- if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri))
+ if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out baseUri))
  {
  throw new InvalidOperationException($"Invalid Api base URL: '{baseUrl}'");
+ }
  }
 
  var hubUrl = new Uri(baseUri, "hubs/notification");

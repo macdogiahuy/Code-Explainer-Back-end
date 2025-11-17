@@ -1,17 +1,21 @@
 # Code-Explainer-Back-end
+
 Back-end of Code Explainer project. AI for SE
 
 ## Table of content
+
 - [Installation](#installation)
 - [Usage](#usage)
 - [Structure](#project-structure)
 - [Environment](#environment)
 - [License](#license)
+
 ## Installation
 
 The project required [.NET](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) SDK 9
 
 **NOTE:** Install dotnet ef core (If already installed, skip this section)
+
 ```csharp
 dotnet tool install --global dotnet-ef
 ```
@@ -19,11 +23,13 @@ dotnet tool install --global dotnet-ef
 ## Usage
 
 - Clone the repository
+
 ```bash
 git clone https://github.com/kleqing/Code-Explainer-Back-end.git
 ```
 
 - Build
+
 ```bash
 dotnet build
 ```
@@ -51,18 +57,22 @@ dotnet run --project CodeExplainer.WebApi/CodeExplainer.WebApi.csproj -c Debug
 ```
 
 Notes:
+
 - Do NOT commit secrets into repository files. Use environment variables or `dotnet user-secrets` for development:
+
 ```bash
 # from CodeExplainer.WebApi folder:
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Port=5432;Database=...;Username=...;Password=...;Ssl Mode=Require;Trust Server Certificate=true"
 ```
+
 - After running migrations, verify the schema and the `__EFMigrationsHistory` table in your PostgreSQL/Neon instance.
 - Rotate any credentials that were exposed.
 
-*API Endpoint:* https://localhost:7077/swagger/index.html
+_API Endpoint:_ https://localhost:7077/swagger/index.html
 
 ## User Data Example in Database
+
 ```json
 [
   {
@@ -80,8 +90,6 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Port=543
   }
 ]
 ```
-
-
 
 ## Environment
 
